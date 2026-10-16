@@ -83,6 +83,9 @@ jobs:
           if ($version -ne $addonVersion) { throw 'Root and addon versions differ.' }
           python -B tools/check_release.py --format addon --godot "$env:GODOT_BIN" --output-dir "build/godot-libretro-shaders-$version" --report-dir test-results/package @options
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          # Use setup-python's interpreter for byte-identical ZIP reuse.
+          # The batch default, py -3, can select a different Python/zlib.
+          $env:PYTHON = (python -c 'import sys; print(sys.executable)').Trim()
           & .\build.bat
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
