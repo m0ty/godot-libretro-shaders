@@ -1,0 +1,20 @@
+; Standalone addon development project and synthetic demo.
+config_version=5
+
+[application]
+config/name="Libretro Shaders for Godot"
+config/version="1.0.0"
+config/icon="res://addons/retroarch_shaders/icon.svg"
+run/main_scene="res://addons/retroarch_shaders/demo/demo.tscn"
+config/features=PackedStringArray("4.7", "GL Compatibility")
+
+[display]
+window/size/viewport_width=960
+window/size/viewport_height=720
+
+[rendering]
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
+
+[debug]
+file_logging/enable_file_logging=false

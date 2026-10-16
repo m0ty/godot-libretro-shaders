@@ -1,0 +1,118 @@
+name: Shader addon checks
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      render:
+        description: Also run GPU checks (requires a usable display and OpenGL driver)
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: shaders-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  windows:
+    name: Godot 4.7.1 / Windows Compatibility
+    runs-on: windows-2022
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: pwsh
+    env:
+      GODOT_VERSION: 4.7.1
+      # Official release asset: https://github.com/godotengine/godot-builds/releases/tag/4.7.1-stable
+      GODOT_SHA256: c7a289051eaefb460b0106b60e9cd5bee0ef55fd102dcb2bed1eb356cf3d90a1
+      PYTHONUTF8: '1'
+      PYTHONDONTWRITEBYTECODE: '1'
+      RUN_RENDERED: ${{ inputs.render || false }}
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+        with:
+          python-version: '3.13'
+
+      - name: Install the tested Godot release
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $asset = "Godot_v$env:GODOT_VERSION-stable_win64.exe.zip"
+          $archive = Join-Path $env:RUNNER_TEMP $asset
+          $release = "https://github.com/godotengine/godot-builds/releases/download/$env:GODOT_VERSION-stable"
+          Invoke-WebRequest "$release/$asset" -OutFile $archive
+          if ((Get-FileHash -LiteralPath $archive -Algorithm SHA256).Hash -ne $env:GODOT_SHA256) {
+            throw 'Godot archive checksum does not match the pinned official release.'
+          }
+          $destination = Join-Path $env:RUNNER_TEMP 'godot'
+          Expand-Archive -LiteralPath $archive -DestinationPath $destination
+          $binary = Join-Path $destination "Godot_v$env:GODOT_VERSION-stable_win64_console.exe"
+          if (-not (Test-Path -LiteralPath $binary -PathType Leaf)) {
+            throw 'Godot console executable is missing.'
+          }
+          & $binary --version
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          "GODOT_BIN=$binary" >> $env:GITHUB_ENV
+
+      - name: Run independent regressions
+        run: |
+          $options = @()
+          if ($env:RUN_RENDERED -eq 'true') { $options += '--render' }
+          python -B tests/run_tests.py --godot "$env:GODOT_BIN" --output-dir test-results/ci @options
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $report = Get-Content -LiteralPath test-results/ci/summary.json -Raw | ConvertFrom-Json
+          if ($report.status -ne 'pass' -or -not $report.finished_utc) { throw 'Incomplete regression run.' }
+          "$($report.checks) checks passed; GPU tier requested: $env:RUN_RENDERED" >> $env:GITHUB_STEP_SUMMARY
+
+      - name: Build and check Asset Store ZIP in fresh projects
+        run: |
+          $options = @()
+          if ($env:RUN_RENDERED -eq 'true') { $options += '--render' }
+          $version = (Get-Content -LiteralPath VERSION -Raw).Trim()
+          $addonVersion = (Get-Content -LiteralPath addons/retroarch_shaders/VERSION -Raw).Trim()
+          if ($version -ne $addonVersion) { throw 'Root and addon versions differ.' }
+          python -B tools/check_release.py --format addon --godot "$env:GODOT_BIN" --output-dir "build/godot-libretro-shaders-$version" --report-dir test-results/package @options
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & .\build.bat
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Build and check standalone demo ZIP
+        run: |
+          $options = @()
+          if ($env:RUN_RENDERED -eq 'true') { $options += '--render' }
+          $version = (Get-Content -LiteralPath VERSION -Raw).Trim()
+          python -B tools/check_release.py --format standalone --godot "$env:GODOT_BIN" --output-dir "build/godot-libretro-shaders-$version-demo" --report-dir test-results/package-demo @options
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Retain verification reports
+        if: ${{ always() }}
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        with:
+          name: shader-checks-windows-${{ github.run_attempt }}
+          path: |
+            test-results/ci/*.json
+            test-results/ci/*.log
+            test-results/package/*.json
+            test-results/package/*.log
+            test-results/package-demo/*.json
+            test-results/package-demo/*.log
+          retention-days: 14
+          if-no-files-found: warn
+
+      - name: Retain verified release ZIP
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        with:
+          name: godot-libretro-shaders
+          path: build/godot-libretro-shaders-*.zip
+          retention-days: 14
+          if-no-files-found: error

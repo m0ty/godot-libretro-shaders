@@ -1,0 +1,29 @@
+# Godot generated state; script/resource .uid files belong in version control.
+.godot/
+export_credentials.cfg
+
+# Python generated state.
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# Local packages, audits, and regression reports.
+/build/*
+!/build/.gdignore
+/dist/
+/test-results/
+/test-output/
+/coverage/
+.coverage
+
+# Local editor and operating-system state.
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+*.tmp
+*.bak

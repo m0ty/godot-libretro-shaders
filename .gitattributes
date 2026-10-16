@@ -1,0 +1,16 @@
+* text=auto eol=lf
+*.bat text eol=crlf
+
+# GitHub source archives install only the addon. Clone for the development
+# project/tests; the separate -demo ZIP includes a standalone demo project.
+/** export-ignore
+/addons !export-ignore
+/addons/** !export-ignore
+
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.gif binary
+*.ico binary
+*.zip binary
