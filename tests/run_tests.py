@@ -56,8 +56,13 @@ def assess_output(output, exit_code, evidence="checks"):
     elif evidence == "unittest":
         summary = re.search(r"^Ran (\d+) tests? in ", output, re.MULTILINE)
         success = re.search(r"^OK(?: \(skipped=\d+\))?\s*$", output, re.MULTILINE)
-        if not summary or int(summary[1]) == 0 or not success:
-            result["reason"] = "Missing successful unittest summary"
+        failure = re.search(r"^FAILED(?: \([^\r\n]*\))?\s*$", output, re.MULTILINE)
+        if summary:
+            result["checks"] = int(summary[1])
+        if failure:
+            result["reason"] = f"Unittest reported {failure[0].strip()}"
+        elif not summary or int(summary[1]) == 0 or not success:
+            result.setdefault("reason", "Missing successful unittest summary")
         else:
             result.update(checks=int(summary[1]), failures=0)
     elif evidence == "import":

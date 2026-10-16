@@ -93,6 +93,20 @@ class OutputAssessmentTests(unittest.TestCase):
             with self.subTest(output=invalid):
                 self.assertEqual(runner.assess_output(invalid, 0, evidence="unittest")["status"], "fail")
 
+    def test_unittest_failure_reports_summary_and_executed_count(self):
+        output = "...F\nRan 4 tests in 0.012s\n\nFAILED (failures=1)\n"
+        for exit_code in (0, 1):
+            with self.subTest(exit_code=exit_code):
+                result = runner.assess_output(output, exit_code, evidence="unittest")
+                self.assertEqual(result["status"], "fail")
+                self.assertEqual(result["checks"], 4)
+                self.assertEqual(result["reason"], "Unittest reported FAILED (failures=1)")
+
+    def test_unittest_missing_summary_preserves_process_error(self):
+        result = runner.assess_output("Python could not start tests\n", 2, evidence="unittest")
+        self.assertEqual(result["status"], "fail")
+        self.assertEqual(result["reason"], "Process exited 2")
+
 
 class StageExecutionTests(unittest.TestCase):
     def test_timeout_fails_and_preserves_partial_output(self):

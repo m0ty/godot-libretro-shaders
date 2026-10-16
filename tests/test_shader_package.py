@@ -29,7 +29,9 @@ class PackageTests(unittest.TestCase):
     def setUp(self):
         temporary = tempfile.TemporaryDirectory(prefix="shader-package-")
         self.addCleanup(temporary.cleanup)
-        self.folder = Path(temporary.name)
+        # Windows TEMP may use an 8.3 alias. Match the builder's resolved paths
+        # so containment checks and mocked filesystem operations see one spelling.
+        self.folder = Path(temporary.name).resolve()
         self.source = self.folder / "source"
         self.output = self.folder / "release"
         self.archive = self.folder / "release.zip"
