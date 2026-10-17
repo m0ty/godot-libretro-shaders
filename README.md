@@ -4,6 +4,9 @@ Use RetroArch/libretro `.glsl` shaders and `.glslp` presets in Godot games with
 a GDScript add-on. Version **1.0.0**, MIT licensed. Runtime use needs no native
 extension, Python installation, editor plugin activation, or host-game assets.
 
+Browse or download `.glsl` shaders and `.glslp` presets from the
+[libretro GLSL shader collection on GitHub](https://github.com/libretro/glsl-shaders).
+
 The verified baseline is **Godot 4.7.1 on Windows with the Compatibility
 renderer**. Other engine versions, platforms, and renderers need their own
 validation. External shader collections are supplied separately and retain
