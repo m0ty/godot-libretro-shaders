@@ -33,20 +33,46 @@ Render the content you want to process into a `SubViewport`, display its texture
 in the host viewport, and attach an effect:
 
 ```gdscript
+# Attach this script to the parent of a SubViewport named SourceViewport.
+# Render your scene there at 320x240 and keep the viewport updating.
+# Display its texture in the host viewport with a TextureRect below layer 110.
 extends Node
 
+# Load the add-on script so we can create an effect from it.
 const PostProcess = preload("res://addons/retroarch_shaders/post_process.gd")
 
+# Run once, after this node and its children have entered the scene tree.
 func _ready() -> void:
+    # Create the effect's CanvasLayer (layer 110 by default), then add it to
+    # the scene tree before configuring it. UI on higher layers stays unprocessed.
     var effect = PostProcess.new()
     add_child(effect)
+
+    # $SourceViewport refers to this node's child named SourceViewport.
+    # Give pass chains its live texture; no per-frame setter call is needed.
+    # The single-pass shader below instead captures the host viewport, which
+    # is why the source texture must also be displayed there.
     effect.set_framebuffer_texture($SourceViewport.get_texture())
+
+    # Tell shaders the logical source resolution, so scanlines follow its
+    # pixel rows even when enlarged. This does not resize the SubViewport.
     effect.set_input_size(Vector2(320, 240))
+
+    # Load, translate and apply the shader now. The returned Dictionary reports
+    # whether configuration succeeded; rendering then updates automatically.
     var result = effect.configure({
+        # Enable processing. Use false in a later configure() call to disable it.
         "shader_enabled": true,
+        # Use the bundled scanline shader, or replace this with a .glslp preset
+        # to load a complete multipass effect and its dependencies.
         "shader_path": "res://addons/retroarch_shaders/demo/shaders/scanlines.glsl",
+        # Override parameters by their declared names. This shader's STRENGTH
+        # ranges from 0.0 to 0.8; 0.3 darkens every other source row by 30%.
         "shader_parameters": {"STRENGTH": 0.3},
     })
+
+    # Report loading/configuration failures in Godot's debugger. A failed
+    # replacement keeps any previously configured effect active.
     if not result.ok:
         push_warning(result.message)
 ```
