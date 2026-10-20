@@ -4,6 +4,9 @@ Use RetroArch/libretro `.glsl` shaders and `.glslp` presets in Godot games with
 a GDScript add-on. Version **1.0.0**, MIT licensed. Runtime use needs no native
 extension, Python installation, editor plugin activation, or host-game assets.
 
+Get the add-on from the
+[Godot Asset Store](https://store.godotengine.org/asset/moty-fainer/godot-libretro-shaders/).
+
 Browse or download `.glsl` shaders and `.glslp` presets from the
 [libretro GLSL shader collection on GitHub](https://github.com/libretro/glsl-shaders).
 
@@ -11,6 +14,23 @@ The verified baseline is **Godot 4.7.1 on Windows with the Compatibility
 renderer**. Other engine versions, platforms, and renderers need their own
 validation. External shader collections are supplied separately and retain
 their own licenses.
+
+## Install in a game
+
+1. Download the add-on ZIP from the
+   [Godot Asset Store listing](https://store.godotengine.org/asset/moty-fainer/godot-libretro-shaders/).
+2. Extract the ZIP into your existing Godot project's root (the directory
+   containing `project.godot`), merging the included `addons` directory with
+   your project's. The installed folder should be
+   `res://addons/retroarch_shaders/`.
+3. Open the project in Godot, open
+   `addons/retroarch_shaders/demo/demo.tscn`, and press **F6** to check the
+   installation.
+
+No plugin activation is required. For a manual install from GitHub, copy the
+entire [`addons/retroarch_shaders`](addons/retroarch_shaders) directory from
+this repository or its source archive into your project's `addons` directory.
+Keep its runtime scripts together.
 
 ## Try the demo
 
@@ -22,12 +42,7 @@ Clone the repository for the development project, or download a release ZIP
 ending in `-demo.zip`. The Asset Store ZIP and GitHub source archives contain
 the installable `addons/` directory.
 
-## Install in a game
-
-Copy the entire [`addons/retroarch_shaders`](addons/retroarch_shaders) directory
-into your project's `addons` directory. Keep its runtime scripts together.
-Open `addons/retroarch_shaders/demo/demo.tscn` and press **F6** to check the
-installation. No plugin activation is required.
+## Add an effect
 
 Render the content you want to process into a `SubViewport`, display its texture
 in the host viewport, and attach an effect:
@@ -163,7 +178,7 @@ For a standalone demonstration project, use the default standalone format and
 a distinct name such as `build/godot-libretro-shaders-1.0.0-demo`.
 CI tests both package formats alongside headless regressions and GDScript
 diagnostics; manual workflow dispatch can also run the rendered tier.
-See the [prepared Store listing](docs/STORE.md) for description, media, version
+See the [Store listing details](docs/STORE.md) for description, media, version
 notes, and upload fields.
 
 The add-on and shader regression tests were extracted from the

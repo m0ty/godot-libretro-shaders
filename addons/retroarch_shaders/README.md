@@ -4,9 +4,29 @@ Run external RetroArch `.glsl` shaders and `.glslp` presets in Godot using
 GDScript. Version **1.0.0**, MIT licensed. No native extension, editor plugin,
 Python runtime, or game assets are needed to use the add-on.
 
+Get the add-on from the
+[Godot Asset Store](https://store.godotengine.org/asset/moty-fainer/godot-libretro-shaders/).
+
 The verified baseline is **Godot 4.7.1 on Windows with the Compatibility
 renderer**. Other engine versions and renderers are unverified. Shader
 collections are supplied separately and retain their own licenses.
+
+## Install in a game
+
+1. Download the add-on ZIP from the
+   [Godot Asset Store listing](https://store.godotengine.org/asset/moty-fainer/godot-libretro-shaders/).
+2. Extract it into your existing Godot project's root, next to `project.godot`.
+   Merge the included `addons` directory with your project's so this folder
+   is installed at `res://addons/retroarch_shaders/`.
+3. Open the project in Godot, open
+   `addons/retroarch_shaders/demo/demo.tscn`, and press **F6** to check the
+   installation.
+
+No plugin activation is required. For a manual install from GitHub, copy the
+entire `addons/retroarch_shaders` folder from the repository or its source
+archive into your project's `addons` directory. Keep its runtime scripts
+together. Runtime imports are relative, so the folder can also be relocated;
+use its actual path in your preload.
 
 ## Try the demo
 
@@ -14,10 +34,8 @@ Open the standalone distribution's `project.godot` and press **F5**. The demo
 includes an original scanline shader, a synthetic animated image, a shader
 picker, and parameter controls. It works without an external collection.
 
-Inside an existing project, copy this entire folder to
-`addons/retroarch_shaders`, open `demo/demo.tscn`, and run that scene with **F6**.
-No plugin activation is required. Runtime imports are relative, so the folder
-can also be relocated; use its actual path in your preload.
+Inside an existing project, run the installed
+`addons/retroarch_shaders/demo/demo.tscn` scene with **F6**.
 
 ## Add an effect
 
